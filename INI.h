@@ -162,8 +162,7 @@ INI::INI(const INI &from) : source(from.source), filename(from.filename) {
 INI::INI(fini_string_t filename, bool doParse, int parseFlags) : source(SOURCE_FILE), filename(std::move(filename)) {
     this->create("");
 
-    if (doParse)
-        parse(parseFlags);
+    if (doParse) { parse(parseFlags); }
 }
 
 INI::~INI() {
@@ -181,8 +180,7 @@ bool INI::parse(int parseFlags) {
         case SOURCE_FILE: {
             fini_ifstream_t file(filename);
 
-            if (!file.is_open())
-                return false;
+            if (!file.is_open()) { return false; }
 
             _parseFile(file, parseFlags);
 
@@ -212,18 +210,19 @@ void INI::_parseFile(fini_ifstream_t &file, unsigned int parseFlags) {
         i++;
 
         // Parse comments
-        if (parseFlags & PARSE_COMMENTS_SLASH || parseFlags & PARSE_COMMENTS_ALL)
+        if (parseFlags & PARSE_COMMENTS_SLASH || parseFlags & PARSE_COMMENTS_ALL) {
             line = line.substr(0, line.find("//"));
-        if (parseFlags & PARSE_COMMENTS_HASH || parseFlags & PARSE_COMMENTS_ALL)
+        }
+        if (parseFlags & PARSE_COMMENTS_HASH || parseFlags & PARSE_COMMENTS_ALL) {
             line = line.substr(0, line.find('#'));
+        }
 
-        if (trim(line).empty()) // Skip empty lines
-            continue;
+        if (trim(line).empty()) { continue; } // Skip empty lines
 
         if ('[' == line.at(0)) { // Section
             section = trim(line, "[] "); // Obtain key value, including contained spaced
-            if (section.empty()) // If no section value, use default section
-                local_current = this->current;
+            if (section.empty()) { local_current = this->current; } // If no section value, use default section
+
 
             if (sections.find(section) != sections.end()) {
                 std::cerr << "Error: cpp-feather-ini-parser: Duplicate section '" + section + "':" << i << std::endl;
@@ -254,47 +253,37 @@ bool INI::save(const fini_string_t &file_name, unsigned int saveFlags) {
     saveFlags = (saveFlags > 0) ? saveFlags : SAVE_FLAGS;
 
     fini_ofstream_t file((file_name.empty()) ? this->filename : file_name, std::ios::trunc);
-    if (!file.is_open())
-        return false;
+    if (!file.is_open()) { return false; }
 
     // Save remaining sections
     for (const auto &i: sections) {
-        //if (i.first == "")
         //  continue;
-        if (saveFlags & SAVE_PRUNE && i.second->empty())  // No keys/values in section, skip to next
-            continue;
+        if (saveFlags & SAVE_PRUNE && i.second->empty()) { continue; }  // No keys/values in section, skip to next
+
 
         // Write section
         if (!i.first.empty()) {
-            if (saveFlags & SAVE_SPACE_SECTIONS)
-                file << "[ " << i.first << " ]" << std::endl;
-            else
-                file << '[' << i.first << ']' << std::endl;
+            if (saveFlags & SAVE_SPACE_SECTIONS) { file << "[ " << i.first << " ]" << std::endl; }
+            else { file << '[' << i.first << ']' << std::endl; }
         }
 
         // Loop through key & values
         for (const auto &j: *i.second) {
-            if (saveFlags & SAVE_PRUNE && j.second.empty())
-                continue;
+            if (saveFlags & SAVE_PRUNE && j.second.empty()) { continue; }
 
             // Write key & value
-            if (saveFlags & SAVE_TAB_KEYS && !i.first.empty())
-                file << '\t'; // Insert indent
+            if (saveFlags & SAVE_TAB_KEYS && !i.first.empty()) { file << '\t'; } // Insert indent
 
-            if (saveFlags & SAVE_SPACE_KEYS)
-                file << j.first << " = " << j.second;
-            else
-                file << j.first << '=' << j.second;
+            if (saveFlags & SAVE_SPACE_KEYS) { file << j.first << " = " << j.second; }
+            else { file << j.first << '=' << j.second; }
 
-            if (saveFlags & SAVE_SEMICOLON_KEYS)
-                file << ';';
+            if (saveFlags & SAVE_SEMICOLON_KEYS) { file << ';'; }
 
             file << std::endl;
         }
 
         // New section line
-        if (saveFlags & SAVE_PADDING_SECTIONS)
-            file << '\n';
+        if (saveFlags & SAVE_PADDING_SECTIONS) { file << '\n'; }
     }
 
     file.close();
@@ -321,8 +310,7 @@ void INI::create(const fini_string_t &section) {
 
 //Removes a section including all key/value pairs
 void INI::remove(const fini_string_t &section) {
-    if (select(section, true))
-        sections.erase(section);
+    if (select(section, true)) { sections.erase(section); }
 
     current = nullptr;
 }
